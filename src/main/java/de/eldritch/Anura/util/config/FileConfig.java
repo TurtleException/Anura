@@ -4,6 +4,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * A simple config that is stored in a file.
@@ -20,14 +24,14 @@ public class FileConfig extends ConfigSection {
         this.file = file;
     }
 
-    private void read(boolean clear) {
+    private void read(boolean clear) throws IOException, IllegalConfigException {
         if (clear) {
             for (String key : this.getKeys(false)) {
                 this.set(key, null);
             }
         }
 
-        // TODO
+
     }
 
     public @NotNull File getFile() {

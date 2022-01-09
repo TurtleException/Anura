@@ -13,6 +13,7 @@ import java.util.TreeSet;
  * Represents an individual section of a configuration.
  * <p> ConfigSections are stored in-memory.
  */
+@SuppressWarnings("unused")
 public class ConfigSection {
     private final String key;
 
@@ -522,9 +523,7 @@ public class ConfigSection {
         });
 
         if (deep) {
-            children.forEach(configSection -> {
-                keys.addAll(configSection.getKeys(true));
-            });
+            children.forEach(configSection -> keys.addAll(configSection.getKeys(true)));
         }
 
         return keys;
@@ -536,12 +535,8 @@ public class ConfigSection {
         builder.append(this.getClass().getSimpleName()).append("[").append(this.getKey()).append("]{");
 
         TreeSet<String> val = new TreeSet<>();
-        values.forEach((key, value) -> {
-            val.add(key + "='" + value + "'");
-        });
-        children.forEach(configSection -> {
-            val.add(configSection.toString());
-        });
+        values.forEach((key, value)    -> val.add(key + "='" + value + "'"));
+        children.forEach(configSection -> val.add(configSection.toString()));
 
         for (String s : val) {
             builder.append(s).append(", ");
