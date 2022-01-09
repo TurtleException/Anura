@@ -1,13 +1,10 @@
 package de.eldritch.Anura.util.config;
 
 import org.jetbrains.annotations.NotNull;
+import org.yaml.snakeyaml.Yaml;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.io.*;
+import java.util.TreeMap;
 
 /**
  * A simple config that is stored in a file.
@@ -22,19 +19,26 @@ public class FileConfig extends ConfigSection {
             throw new IllegalAccessError("File cannot be null");
 
         this.file = file;
+
+        this.load();
     }
 
-    private void read(boolean clear) throws IOException, IllegalConfigException {
-        if (clear) {
-            for (String key : this.getKeys(false)) {
-                this.set(key, null);
-            }
-        }
-
-
+    /**
+     * (Re-)loads the config from its file.
+     * @throws FileNotFoundException if the {@link FileReader} could not be instantiated properly.
+     */
+    public void load() throws FileNotFoundException {
+        this.load(new FileReader(file), false);
     }
 
-    public @NotNull File getFile() {
-        return file;
+    /**
+     * Saves the config to its file.
+     * @throws IOException if the {@link FileWriter} could not be instantiated properly.
+     */
+    public void save() throws IOException {
+        TreeMap<String, Object> data = new TreeMap<>();
+        this.getKeys(true).forEach(s -> data.put(s, this.get(s)));
+
+        new Yaml().dump(data, new FileWriter(file, false));
     }
 }

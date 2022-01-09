@@ -2,12 +2,10 @@ package de.eldritch.Anura.util.config;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.yaml.snakeyaml.Yaml;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.TreeSet;
+import java.io.Reader;
+import java.util.*;
 
 /**
  * Represents an individual section of a configuration.
@@ -101,7 +99,7 @@ public class ConfigSection {
                 // value is config section
                 children.add((ConfigSection) object);
             } else {
-                // value is String or Serializable (stored as String)
+                // value is String
                 values.put(keys[0], object.toString());
             }
         } else {
@@ -177,13 +175,22 @@ public class ConfigSection {
         String raw = this.getString(path);
         if (raw == null) return null;
 
-        // TODO: introduce serializable objects
-
         try {
             return type.cast(raw);
         } catch (ClassCastException e) {
             return null;
         }
+    }
+
+    /**
+     * Provides a nullable object at the specific path. If the path does not contain a value <code>null</code> is
+     * returned.
+     *
+     * @param path Path to the value.
+     * @return Object saved at the given path.
+     */
+    public @Nullable Object get(@NotNull String path) {
+        return this.get(path, Object.class);
     }
 
     /**
@@ -527,6 +534,22 @@ public class ConfigSection {
         }
 
         return keys;
+    }
+
+    /**
+     * Loads values from a YAML provided by a reader.
+     * @param reader Reader that can be used to read the YAML.
+     * @param clear whether to clear existing data before loading.
+     */
+    public void load(Reader reader, boolean clear) {
+        if (clear) {
+            for (String key : this.getKeys(false)) {
+                this.set(key, null);
+            }
+        }
+
+        //noinspection unchecked
+        ((Map<String, Object>) new Yaml().load(reader)).forEach(this::set);
     }
 
     @Override
