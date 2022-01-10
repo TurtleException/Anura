@@ -1,8 +1,13 @@
 package de.eldritch.Anura.util.config;
 
+import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.BaseConstructor;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
+import org.yaml.snakeyaml.representer.Representer;
 
 import java.io.Reader;
 import java.util.*;
@@ -98,6 +103,10 @@ public class ConfigSection {
             if (object instanceof ConfigSection) {
                 // value is config section
                 children.add((ConfigSection) object);
+            } else if (object == null) {
+                // value is null -> remove value / section
+                values.remove(keys[0]);
+                children.removeIf(configSection -> keys[0].equals(configSection.getKey()));
             } else {
                 // value is String
                 values.put(keys[0], object.toString());
@@ -138,7 +147,7 @@ public class ConfigSection {
             return null;
 
         for (ConfigSection child : children) {
-            if (path.equals(child.getKey())) {
+            if (keys[0].equals(child.getKey())) {
                 return child.getString(path.substring(keys[0].length() + 1));
             }
         }
@@ -548,8 +557,11 @@ public class ConfigSection {
             }
         }
 
-        //noinspection unchecked
-        ((Map<String, Object>) new Yaml().load(reader)).forEach(this::set);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> map = (Map<String, Object>) new Yaml().load(reader);
+
+        ConfigUtil.clearMap(map);
+        map.forEach(this::set);
     }
 
     @Override

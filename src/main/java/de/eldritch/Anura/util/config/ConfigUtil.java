@@ -1,5 +1,11 @@
 package de.eldritch.Anura.util.config;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * A simple class for a few utils
  */
@@ -26,5 +32,19 @@ class ConfigUtil {
             return false;
 
         return true;
+    }
+
+    static void clearMap(@NotNull Map<String, Object> map) {
+        boolean loop = true;
+        while (loop) {
+            loop = false;
+            for (Map.Entry<String, Object> entry : Set.copyOf(map.entrySet())) {
+                if (entry.getValue() instanceof Map<?, ?> mapObj) {
+                    map.remove(entry.getKey());
+                    mapObj.forEach((o, o2) -> map.put(entry.getKey() + "." + o, o2));
+                    loop = true;
+                }
+            }
+        }
     }
 }
