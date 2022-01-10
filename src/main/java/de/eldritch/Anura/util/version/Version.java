@@ -2,9 +2,9 @@ package de.eldritch.Anura.util.version;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Properties;
 
 public record Version(byte MAJOR, byte MINOR, short BUILD, String EXTRA) {
     public static Version parse(String raw) throws IllegalVersionException {
@@ -28,12 +28,23 @@ public record Version(byte MAJOR, byte MINOR, short BUILD, String EXTRA) {
         return new Version(major, minor, build, extra);
     }
 
-    public static Version parseFromFileName(String fileName) throws IllegalVersionException {
-        Matcher matcher = Pattern.compile("/\\d\\d\\.\\d\\d-\\d\\d\\d(-[^\\\\.]*)?/gm").matcher(fileName);
-        if (matcher.find())
-            return parse(matcher.group(1));
-        else
-            throw new IllegalVersionException("FileName '" + fileName + "' does not seem to contain a legal version.");
+    /**
+     * Retrieves the version from <code>resources/version.properties</code>. If the file does not exist, does not
+     * contain a valid version or could not be read <code>null</code> is returned and an {@link Exception} will be
+     * printed to the console. It is recommended to check whether the version is <code>null</code> while constructing
+     * the main class.
+     * @return Version stored in resources.
+     */
+    public static Version retrieveFromResources() {
+        try {
+            Properties properties = new Properties();
+            properties.load(Version.class.getClassLoader().getResourceAsStream("version.properties"));
+            return parse(properties.getProperty("version"));
+        } catch (NullPointerException | IOException | IllegalVersionException e) {
+            System.out.println("Unable to retrieve version from resources.");
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
