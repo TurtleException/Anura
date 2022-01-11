@@ -1,15 +1,8 @@
 package de.eldritch.Anura.util.config;
 
-import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.yaml.snakeyaml.LoaderOptions;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.BaseConstructor;
-import org.yaml.snakeyaml.constructor.SafeConstructor;
-import org.yaml.snakeyaml.representer.Representer;
 
-import java.io.Reader;
 import java.util.*;
 
 /**
@@ -18,141 +11,157 @@ import java.util.*;
  */
 @SuppressWarnings("unused")
 public class ConfigSection {
-    private final String key;
-
     // parent configuration, null if this is the root section
-    private final ConfigSection parent;
+    private ConfigSection parent;
 
-    // deeper sections that are stored within this section
-    private final TreeSet<ConfigSection> children = new TreeSet<>(Comparator.comparing(ConfigSection::getKey));
+    private String key;
+    private Object value;
 
-    // values that are stored within this section (on the same level)
-    private final HashMap<String, String> values = new HashMap<>();
+    private final HashSet<ConfigSection> children = new HashSet<>();
 
+    /**
+     * Constructs a new root Config without any values.
+     */
+    public ConfigSection() {
+        this(null, null);
+    }
 
     ConfigSection(@Nullable ConfigSection parent, @Nullable String key) {
         this.key = key;
         this.parent = parent;
     }
 
+    /* ---------- UTILITIES ---------- */
 
     /**
-     * Creates a new ConfigSection that is a child of this section.
-     * @param key The key of the section.
-     * @return The new ConfigSection.
+     * Provides an exact copy of this config. (keys & values)
+     * @param config Config to create a copy of.
+     * @return Newly created config.
      */
-    public @NotNull ConfigSection createSection(@NotNull String key) throws IllegalArgumentException {
-        if (key.contains("\\.") || key.contains(":"))
-            throw new IllegalArgumentException("Not a valid key: " + key);
-
-        ConfigSection section = new ConfigSection(this, key);
-        this.children.add(section);
-        return section;
+    public static ConfigSection copyOf(@NotNull ConfigSection config) {
+        ConfigSection conf = new ConfigSection(null, null);
+        conf.setAll(config.getMap(true));
+        return conf;
     }
 
+    /* ---------- MAIN GET & SET ---------- */
 
     /**
-     * Get the key of this ConfigSection. This does not involve the keys of parent sections.
-     * @return Key of the section.
+     * Returns a nullable {@link Object} located at the given path.
+     * @param path Path where the object should be located.
+     * @return Object at the given path.
+     * @throws NullPointerException if the provided path is invalid.
+     * @throws IllegalArgumentException if the provided path is invalid. Specifically providing an empty String on root
+     *                                  level will cause this exception to be thrown.
      */
-    public @Nullable String getKey() {
-        return key;
-    }
+    public @Nullable Object get(@NotNull String path) throws NullPointerException, IllegalArgumentException {
+        if (!path.equals(""))
+            ConfigUtil.validatePath(path);
 
-    /**
-     * Get the path of this ConfigSection. This involves all keys of parent sections.
-     * @return Path of the section.
-     */
-    public @Nullable String getPath() {
-        if (this.getKey() == null)
-            return null;
+        if (parent == null && path.equals(""))
+            throw new IllegalArgumentException("Path may not be null on root");
 
-        StringBuilder key = new StringBuilder(this.getKey());
-        ConfigSection section = this.getParent();
-        while (section != null && !section.isRoot()) {
-            key.insert(0, section.getKey() + ".");
-            section = section.getParent();
-        }
-
-        return key.toString();
-    }
-
-    /**
-     * Provides the parent config of this section.
-     * @return The parent of this section, <code>null</code> if this is the root node.
-     * @see ConfigSection#isRoot()
-     */
-    public @Nullable ConfigSection getParent() {
-        return parent;
-    }
-
-    public boolean isRoot() {
-        return parent == null;
-    }
-
-    public void set(@NotNull String path, Object object) {
-        if (!ConfigUtil.validatePath(path))
-            throw new IllegalArgumentException("Not a valid path: " + path);
-
-        if (this.isRoot() && path.equals(""))
-            throw new IllegalArgumentException("Key may not be empty String on root section.");
 
         String[] keys = path.split("\\.");
-        if (keys.length < 2) {
-            // set value in this section
-            if (object instanceof ConfigSection) {
-                // value is config section
-                children.add((ConfigSection) object);
-            } else if (object == null) {
-                // value is null -> remove value / section
-                values.remove(keys[0]);
-                children.removeIf(configSection -> keys[0].equals(configSection.getKey()));
-            } else {
-                // value is String
-                values.put(keys[0], object.toString());
-            }
+
+        if (keys.length < 1) {
+            // return value (if != null) or this config
+            return Objects.requireNonNullElse(value, this);
         } else {
-            // set value in deeper section
+            // pass on to deeper section
             for (ConfigSection child : children) {
                 if (child.getKey().equals(keys[0])) {
-                    child.set(path.substring(keys[0].length() + 1), object);
-                    return;
+                    return child.get(path.substring(keys[0].length() + 1));
                 }
             }
-            // set value in new deeper section
-            createSection(keys[0]).set(path.substring(keys[0].length() + 1), object);
+            return null;
         }
+    }
+
+    /**
+     * Sets an {@link Object} to a given path or removes all objects (including child configs) from that path if the
+     * provided value is <code>null</code>.
+     * @param path Path where the object should be located.
+     * @param value New object at the given path. Use <code>null</code> to remove the path.
+     * @throws NullPointerException if the path is invalid.
+     * @throws IllegalArgumentException if the provided path is invalid. Specifically providing an empty String on root
+     *                                  level will cause this exception to be thrown.
+     */
+    public void set(@NotNull String path, @Nullable Object value) throws NullPointerException, IllegalArgumentException {
+        if (!path.equals(""))
+            ConfigUtil.validatePath(path);
+
+        if (parent == null && path.equals(""))
+            throw new IllegalArgumentException("Path may not be null on root");
+
+
+        String[] keys = path.split("\\.");
+
+        // determine whether this belongs here or should be passed to a deeper level
+        if (keys.length < 2) {
+            // set value in this section
+            if (value instanceof ConfigSection conf) {
+                // reassign internal values
+                conf.reassign(this, keys[0]);
+
+                // remove old config at that location
+                children.removeIf(config -> config.getKey().equals(keys[0]));
+
+                // add new config
+                children.add(conf);
+            } else if (value == null) {
+                // delete value
+                this.value = null;
+
+                // detach children
+                children.clear();
+            } else {
+                // remove possible config with that same key
+                children.removeIf(config -> config.getKey().equals(keys[0]));
+
+                // assign value
+                this.value = value;
+            }
+        } else {
+            // pass on to deeper section or create new one
+            getSection(keys[0]).set(path.substring(keys[0].length() + 1), value);
+        }
+    }
+
+    /* ---------- ADDITIONAL GET ---------- */
+
+    /**
+     * Provides a nullable object of the given type located at the specified path. If the path does not contain a value
+     * <code>null</code> is returned.
+     * @param path Path to the value.
+     * @param type Class that the value should be an object of.
+     * @return Instance of type or <code>null</code>.
+     * @throws NullPointerException if the path is invalid.
+     * @throws IllegalArgumentException if the provided path is invalid. Specifically providing an empty String on root
+     *                                  level will cause this exception to be thrown.
+     * @throws ClassCastException if the object could not be cast to the provided type.
+     * @see ConfigSection#get(String)
+     * @see ConfigSection#isType(String, Class)
+     */
+    public <T> @Nullable T get(@NotNull String path, @NotNull Class<T> type) throws NullPointerException, IllegalArgumentException, ClassCastException {
+        Object raw = this.get(path);
+        if (raw == null) return null;
+
+        return type.cast(raw);
     }
 
     /**
      * Provides a nullable {@link String} located at the specified path.
-     *
      * @param path Path to the value.
      * @return Value of the path.
-     *
      * @see ConfigSection#getString(String, String)
      */
     public @Nullable String getString(@NotNull String path) {
-        if (!ConfigUtil.validatePath(path))
+        try {
+            return (String) this.get(path);
+        } catch (Exception e) {
             return null;
-
-        if (path.equals(this.key))
-            return this.toString();
-
-        if (values.containsKey(path))
-            return values.get(path);
-
-        String[] keys = path.split("\\.");
-        if (keys.length < 2)
-            return null;
-
-        for (ConfigSection child : children) {
-            if (keys[0].equals(child.getKey())) {
-                return child.getString(path.substring(keys[0].length() + 1));
-            }
         }
-
-        return null;
     }
 
     /**
@@ -170,37 +179,7 @@ public class ConfigSection {
         return str == null ? def : str;
     }
 
-    /**
-     * Provides a nullable object of the given type located at the specified path. If the path does not contain a value
-     * or the value is not an instance of the given type <code>null</code> is returned.
-     *
-     * @param path Path to the value.
-     * @param type Class that the value should be an object of.
-     * @return Instance of type or <code>null</code>.
-     *
-     * @see ConfigSection#isType(String, Class)
-     */
-    public <T> @Nullable T get(@NotNull String path, @NotNull Class<T> type) {
-        String raw = this.getString(path);
-        if (raw == null) return null;
-
-        try {
-            return type.cast(raw);
-        } catch (ClassCastException e) {
-            return null;
-        }
-    }
-
-    /**
-     * Provides a nullable object at the specific path. If the path does not contain a value <code>null</code> is
-     * returned.
-     *
-     * @param path Path to the value.
-     * @return Object saved at the given path.
-     */
-    public @Nullable Object get(@NotNull String path) {
-        return this.get(path, Object.class);
-    }
+    /* ------------------------- */
 
     /**
      * Checks whether the given path contains a valid byte or the value can be parsed to a valid byte by
@@ -520,48 +499,154 @@ public class ConfigSection {
         return Boolean.parseBoolean(this.getString(path));
     }
 
+
+    /* ------------------------- */
+
+    /**
+     * Sets all provided values to their given paths.
+     * @param map Map of all values with their desired path as key.
+     */
+    public void setAll(@NotNull Map<String, ?> map) {
+        for (String mapKey : map.keySet()) {
+            try {
+                this.set(mapKey, map.get(mapKey));
+            } catch (NullPointerException | IllegalArgumentException ignored) { }
+        }
+    }
+
+    /**
+     * Parses all values this config and its children hold into a {@link Map} with their path as key.
+     * @param deep Whether to provide values from deeper levels or just the values of this section.
+     * @return Map of all values this config contains.
+     */
+    public @NotNull Map<String, Object> getMap(boolean deep) {
+        HashMap<String, Object> map = new HashMap<>();
+
+        if (value != null) {
+            map.put(this.getPath(), value);
+        } else {
+            for (ConfigSection child : children) {
+                if (deep) {
+                    map.putAll(child.getMap(true));
+                } else {
+                    if (child.hasValue()) {
+                        map.put(child.getPath(), child.getValue());
+                    }
+                }
+            }
+        }
+
+        return map;
+    }
+
     /**
      * Provides a {@link List<String>} of all keys that are contained by this section and its children.
      * @param deep Whether to provide keys from deeper levels or just the values of this section.
-     * @return List of all keys this section contains.
+     * @return List of all keys this config contains.
      */
     public List<String> getKeys(boolean deep) {
         List<String> keys = new ArrayList<>();
 
-        String fullKey = this.getPath();
-
-        values.forEach((key, value) -> {
-            if (fullKey == null) {
-                keys.add(key);
-            } else {
-                keys.add(fullKey + "." + key);
+        if (value != null) {
+            keys.add(this.getPath());
+        } else {
+            for (ConfigSection child : children) {
+                if (deep) {
+                    keys.addAll(child.getKeys(true));
+                } else {
+                    if (child.hasValue()) {
+                        keys.add(child.getPath());
+                    }
+                }
             }
-        });
-
-        if (deep) {
-            children.forEach(configSection -> keys.addAll(configSection.getKeys(true)));
         }
 
         return keys;
     }
 
     /**
-     * Loads values from a YAML provided by a reader.
-     * @param reader Reader that can be used to read the YAML.
-     * @param clear whether to clear existing data before loading.
+     * Checks whether this config holds a value. This is practically equivalent to checking whether
+     * {@link ConfigSection#getValue()} returns <code>null</code>.
+     * @return true if this config holds a value.
      */
-    public void load(Reader reader, boolean clear) {
-        if (clear) {
-            for (String key : this.getKeys(false)) {
-                this.set(key, null);
+    boolean hasValue() {
+        return value != null;
+    }
+
+    /**
+     * Provides the nullable value of this config. If this config only is a node with children this will return
+     * <code>null</code> as a config can only either hold a value or children.
+     * @return Nullable value of this config.
+     */
+    @Nullable Object getValue() {
+        return value;
+    }
+
+    /**
+     * Provides a child config located at the specified key (not recursive) or created a new config if necessary.
+     * @param key The key of the config.
+     * @return (possibly new) config at that location.
+     */
+    ConfigSection getSection(@NotNull String key) {
+        if (key.contains(".") || key.contains(":"))
+            throw new IllegalArgumentException("Illegal key: '" + key + "'");
+
+        ConfigSection section = null;
+        for (ConfigSection child : children) {
+            if (child.getKey().equals(key)) {
+                section = child;
+                break;
             }
         }
 
-        @SuppressWarnings("unchecked")
-        Map<String, Object> map = (Map<String, Object>) new Yaml().load(reader);
+        if (section == null) {
+            // section does not yet exist
+            section = new ConfigSection(this, key);
+            children.add(section);
+        }
 
-        ConfigUtil.clearMap(map);
-        map.forEach(this::set);
+        return section;
+    }
+
+    /**
+     * Used to reassign the parent and key. This is used when providing a Config as the second parameter when calling
+     * {@link ConfigSection#set(String, Object)}.
+     * @param parent New parent config.
+     * @param key New key of this config.
+     */
+    void reassign(@NotNull ConfigSection parent, @NotNull String key) {
+        this.parent = parent;
+        this.key = key;
+    }
+
+    /* ------------------------- */
+
+    /**
+     * Returns the parent {@link ConfigSection}.
+     * @return Tha parent config.
+     */
+    public @Nullable ConfigSection getParent() {
+        return parent;
+    }
+
+    /**
+     * Returns the key of this config.
+     * @return the key of this config.
+     * @see ConfigSection#getPath()
+     */
+    public @NotNull String getKey() {
+        return key;
+    }
+
+    /**
+     * Returns the entire path where this config is located. The path is constructed by this configs key preceded by the
+     * keys of all parent configs recursively (A path looks like this: <code>root.child.thisConfig</code>).
+     * @return This configs path.
+     * @see ConfigSection#getKey()
+     * @see ConfigSection#getParent()
+     */
+    public @NotNull String getPath() {
+        return (parent != null ? parent.getPath() + "." : "") + getKey();
     }
 
     @Override
@@ -569,20 +654,17 @@ public class ConfigSection {
         StringBuilder builder = new StringBuilder();
         builder.append(this.getClass().getSimpleName()).append("[").append(this.getKey()).append("]{");
 
-        TreeSet<String> val = new TreeSet<>();
-        values.forEach((key, value)    -> val.add(key + "='" + value + "'"));
-        children.forEach(configSection -> val.add(configSection.toString()));
+        if (value != null) {
+            builder.append(value);
+        } else {
+            for (ConfigSection child : children)
+                builder.append(child.toString()).append(", ");
 
-        for (String s : val) {
-            builder.append(s).append(", ");
+            // remove ", " from the end
+            if (!children.isEmpty())
+                builder.delete(builder.length() - 2, builder.length());
         }
 
-        // remove ", " from the end
-        if (builder.substring(builder.length() - 2, builder.length()).equals(", ")) {
-            builder.delete(builder.length() - 2, builder.length());
-        }
-        builder.append("}");
-
-        return builder.toString();
+        return builder.append("}").toString();
     }
 }

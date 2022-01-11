@@ -7,4 +7,8 @@ public class IllegalConfigException extends Exception {
     public IllegalConfigException(String message) {
         super(message);
     }
+
+    public IllegalConfigException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }
