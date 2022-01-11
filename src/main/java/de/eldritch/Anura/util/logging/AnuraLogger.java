@@ -4,12 +4,10 @@ import de.eldritch.Anura.Anura;
 import de.eldritch.Anura.core.AnuraInstance;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.logging.Logger;
-
 /**
- * A simple {@link Logger} extension for {@link AnuraInstance AnuraInstances} to help manage different instances.
+ * A simple {@link NestedLogger} extension for {@link AnuraInstance AnuraInstances} to help manage different instances.
  */
-public class AnuraLogger extends Logger {
+public class AnuraLogger extends NestedLogger {
     private final AnuraInstance instance;
 
     /**
@@ -17,12 +15,8 @@ public class AnuraLogger extends Logger {
      * @param instance {@link AnuraInstance} that will be associated with the logger.
      */
     public AnuraLogger(@NotNull AnuraInstance instance) {
-        super("ANURA#" + instance.getId(), null);
-
+        super("ANURA#" + instance.getId(), Anura.singleton.getLogger());
         this.instance = instance;
-
-        this.setParent(Anura.singleton.getLogger());
-        this.setUseParentHandlers(true);
     }
 
     /**
