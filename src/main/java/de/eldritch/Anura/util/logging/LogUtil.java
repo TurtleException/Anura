@@ -2,6 +2,7 @@ package de.eldritch.Anura.util.logging;
 
 import de.eldritch.Anura.Anura;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,6 +14,12 @@ import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
 
 public class LogUtil {
+    /**
+     * After the main class requests the {@link FileHandler} via {@link LogUtil#getFileHandler(Formatter)} the log file
+     * that is associated with that handler will be stored in this variable so it can be used later.
+     */
+    private static File logFile;
+
     /**
      * Provides a {@link FileHandler} that is already set up for the running {@link Anura} instance.
      * @param formatter Log {@link Formatter} to assign to the handler.
@@ -29,10 +36,23 @@ public class LogUtil {
 
         String fileName = datePrefix + "-" + files.length + ".log";
 
+        // create File
+        logFile = new File(getLogDir(), fileName);
+
+
         // create FileHandler
-        FileHandler fileHandler = new FileHandler(new File(getLogDir(), fileName).getPath(), true);
+        FileHandler fileHandler = new FileHandler(logFile.getPath(), true);
         fileHandler.setFormatter(formatter);
         return fileHandler;
+    }
+
+    /**
+     * Provides the {@link File} that has been associated with the {@link FileHandler} by calling
+     * {@link LogUtil#getFileHandler(Formatter)}. This may be null if the FileHandler has not yet been created.
+     * @return Log file associated with the FileHandler of the global logger.
+     */
+    public static @Nullable File getLogFile() {
+        return logFile;
     }
 
     /**
