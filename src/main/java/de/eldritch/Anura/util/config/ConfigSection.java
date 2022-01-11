@@ -10,7 +10,7 @@ import java.util.*;
  * <p> ConfigSections are stored in-memory.
  */
 @SuppressWarnings("unused")
-public class ConfigSection {
+public class ConfigSection implements Config {
     // parent configuration, null if this is the root section
     private ConfigSection parent;
 
@@ -46,14 +46,7 @@ public class ConfigSection {
 
     /* ---------- MAIN GET & SET ---------- */
 
-    /**
-     * Returns a nullable {@link Object} located at the given path.
-     * @param path Path where the object should be located.
-     * @return Object at the given path.
-     * @throws NullPointerException if the provided path is invalid.
-     * @throws IllegalArgumentException if the provided path is invalid. Specifically providing an empty String on root
-     *                                  level will cause this exception to be thrown.
-     */
+    @Override
     public @Nullable Object get(@NotNull String path) throws NullPointerException, IllegalArgumentException {
         if (!path.equals(""))
             ConfigUtil.validatePath(path);
@@ -65,7 +58,7 @@ public class ConfigSection {
         String[] keys = path.split("\\.");
 
         if (keys.length < 1) {
-            // return value (if != null) or this config
+            // return value (if not null) or this config
             return Objects.requireNonNullElse(value, this);
         } else {
             // pass on to deeper section
@@ -78,15 +71,7 @@ public class ConfigSection {
         }
     }
 
-    /**
-     * Sets an {@link Object} to a given path or removes all objects (including child configs) from that path if the
-     * provided value is <code>null</code>.
-     * @param path Path where the object should be located.
-     * @param value New object at the given path. Use <code>null</code> to remove the path.
-     * @throws NullPointerException if the path is invalid.
-     * @throws IllegalArgumentException if the provided path is invalid. Specifically providing an empty String on root
-     *                                  level will cause this exception to be thrown.
-     */
+    @Override
     public void set(@NotNull String path, @Nullable Object value) throws NullPointerException, IllegalArgumentException {
         if (!path.equals(""))
             ConfigUtil.validatePath(path);
@@ -130,19 +115,7 @@ public class ConfigSection {
 
     /* ---------- ADDITIONAL GET ---------- */
 
-    /**
-     * Provides a nullable object of the given type located at the specified path. If the path does not contain a value
-     * <code>null</code> is returned.
-     * @param path Path to the value.
-     * @param type Class that the value should be an object of.
-     * @return Instance of type or <code>null</code>.
-     * @throws NullPointerException if the path is invalid.
-     * @throws IllegalArgumentException if the provided path is invalid. Specifically providing an empty String on root
-     *                                  level will cause this exception to be thrown.
-     * @throws ClassCastException if the object could not be cast to the provided type.
-     * @see ConfigSection#get(String)
-     * @see ConfigSection#isType(String, Class)
-     */
+    @Override
     public <T> @Nullable T get(@NotNull String path, @NotNull Class<T> type) throws NullPointerException, IllegalArgumentException, ClassCastException {
         Object raw = this.get(path);
         if (raw == null) return null;
@@ -150,12 +123,7 @@ public class ConfigSection {
         return type.cast(raw);
     }
 
-    /**
-     * Provides a nullable {@link String} located at the specified path.
-     * @param path Path to the value.
-     * @return Value of the path.
-     * @see ConfigSection#getString(String, String)
-     */
+    @Override
     public @Nullable String getString(@NotNull String path) {
         try {
             return (String) this.get(path);
@@ -164,16 +132,7 @@ public class ConfigSection {
         }
     }
 
-    /**
-     * Provides a non-null {@link String} located at the specified path. If the path does not contain a value or the
-     * value equals <code>null</code> the default value provided by the second parameter will be returned.
-     *
-     * @param path Path to the value.
-     * @param def Default value.
-     * @return Value of the path, def if <code>null</code>
-     *
-     * @see ConfigSection#getString(String)
-     */
+    @Override
     public @NotNull String getString(@NotNull String path, @NotNull String def) {
         String str = this.getString(path);
         return str == null ? def : str;
@@ -181,143 +140,53 @@ public class ConfigSection {
 
     /* ------------------------- */
 
-    /**
-     * Checks whether the given path contains a valid byte or the value can be parsed to a valid byte by
-     * {@link Byte#parseByte(String)}.
-     *
-     * @param path Path to the value to check.
-     * @return true if the value of the given path is a valid byte.
-     *
-     * @see ConfigSection#getByte(String)
-     * @see ConfigSection#getByte(String, byte)
-     */
+    @Override
     public boolean isByte(@NotNull String path) {
         return this.getByte(path, (byte) 0) == this.getByte(path, (byte) 1);
     }
 
-    /**
-     * Checks whether the given path contains a valid short or the value can be parsed to a valid short by
-     * {@link Short#parseShort(String)}.
-     *
-     * @param path Path to the value to check.
-     * @return true if the value of the given path is a valid short.
-     *
-     * @see ConfigSection#getShort(String)
-     * @see ConfigSection#getShort(String, short)
-     */
+    @Override
     public boolean isShort(@NotNull String path) {
         return this.getShort(path, (short) 0) == this.getShort(path, (short) 1);
     }
 
-    /**
-     * Checks whether the given path contains a valid integer or the value can be parsed to a valid integer by
-     * {@link Integer#parseInt(String)}.
-     *
-     * @param path Path to the value to check.
-     * @return true if the value of the given path is a valid integer.
-     *
-     * @see ConfigSection#getInt(String)
-     * @see ConfigSection#getInt(String, int)
-     */
+    @Override
     public boolean isInt(@NotNull String path) {
         return this.getInt(path, 0) == this.getInt(path, 1);
     }
 
-    /**
-     * Checks whether the given path contains a valid long or the value can be parsed to a valid long by
-     * {@link Long#parseLong(String)}.
-     *
-     * @param path Path to the value to check.
-     * @return true if the value of the given path is a valid long.
-     *
-     * @see ConfigSection#getLong(String)
-     * @see ConfigSection#getLong(String, long)
-     */
+    @Override
     public boolean isLong(@NotNull String path) {
         return this.getLong(path, 0L) == this.getLong(path, 1L);
     }
 
-    /**
-     * Checks whether the given path contains a valid float or the value can be parsed to a valid float by
-     * {@link Float#parseFloat(String)}.
-     *
-     * @param path Path to the value to check.
-     * @return true if the value of the given path is a valid float.
-     *
-     * @see ConfigSection#getFloat(String)
-     * @see ConfigSection#getFloat(String, float)
-     */
+    @Override
     public boolean isFloat(@NotNull String path) {
         return this.getFloat(path, (float) 0) == this.getFloat(path, (float) 1);
     }
 
-    /**
-     * Checks whether the given path contains a valid double or the value can be parsed to a valid double by
-     * {@link Double#parseDouble(String)}.
-     *
-     * @param path Path to the value to check.
-     * @return true if the value of the given path is a valid double.
-     *
-     * @see ConfigSection#getDouble(String)
-     * @see ConfigSection#getDouble(String, double)
-     */
+    @Override
     public boolean isDouble(@NotNull String path) {
         return this.getDouble(path, 0) == this.getDouble(path, 1);
     }
 
-    /**
-     * Checks whether the given path contains a valid boolean. A valid boolean is considered either <code>true</code> or
-     * <code>false</code> (case-insensitive). If the value does not represent either of the two <code>false</code> is
-     * returned.
-     * <p>
-     *     Note that the return value of {@link ConfigSection#getBoolean(String)} does necessarily represent a valid
-     *     boolean as it only returns whether the given value equals "true" (case-insensitive).
-     * </p>
-     * @param path Path to the value to check.
-     * @return true if the value of the given path is a valid boolean.
-     */
+    @Override
     public boolean isBoolean(@NotNull String path) {
         String str = this.getString(path, "");
         return str.equalsIgnoreCase("true") || str.equalsIgnoreCase("false");
     }
 
-    /**
-     * Checks whether the given path contains a valid object of the given type.
-     *
-     * @param path Path to the value to check.
-     * @param type Class that the value should be an object of.
-     * @return True if the value at the specified path is an instant of type.
-     *
-     * @see ConfigSection#get(String, Class)
-     */
+    @Override
     public boolean isType(@NotNull String path, @NotNull Class<?> type) {
         return this.get(path, type) != null;
     }
 
-    /**
-     * Provides a byte located at the specified path. If the value at that path does not represent a byte <code>0</code>
-     * is returned.
-     *
-     * @param path Path to the value.
-     * @return Parsed byte.
-     *
-     * @see ConfigSection#isByte(String)
-     * @see ConfigSection#getByte(String, byte)
-     */
+    @Override
     public byte getByte(@NotNull String path) {
         return this.getByte(path, (byte) 0);
     }
 
-    /**
-     * Provides a byte located at the specified path. If the path does not contain a value or the value is not a byte
-     * the default value is returned.
-     *
-     * @param path Path to the value.
-     * @return Parsed byte or the provided default value.
-     *
-     * @see ConfigSection#isByte(String)
-     * @see ConfigSection#getByte(String)
-     */
+    @Override
     public byte getByte(@NotNull String path, byte def) {
         try {
             return Byte.parseByte(this.getString(path, ""));
@@ -326,30 +195,12 @@ public class ConfigSection {
         }
     }
 
-    /**
-     * Provides a short located at the specified path. If the value at that path does not represent a short
-     * <code>0</code> is returned.
-     *
-     * @param path Path to the value.
-     * @return Parsed short.
-     *
-     * @see ConfigSection#isShort(String)
-     * @see ConfigSection#getShort(String, short)
-     */
+    @Override
     public short getShort(@NotNull String path) {
         return this.getShort(path, (short) 0);
     }
 
-    /**
-     * Provides a short located at the specified path. If the path does not contain a value or the value is not a short
-     * the default value is returned.
-     *
-     * @param path Path to the value.
-     * @return Parsed short or the provided default value.
-     *
-     * @see ConfigSection#isShort(String)
-     * @see ConfigSection#getShort(String)
-     */
+    @Override
     public short getShort(@NotNull String path, short def) {
         try {
             return Short.parseShort(this.getString(path, ""));
@@ -358,30 +209,12 @@ public class ConfigSection {
         }
     }
 
-    /**
-     * Provides an int located at the specified path. If the value at that path does not represent an integer
-     * <code>0</code> is returned.
-     *
-     * @param path Path to the value.
-     * @return Parsed int.
-     *
-     * @see ConfigSection#isInt(String)
-     * @see ConfigSection#getInt(String, int)
-     */
+    @Override
     public int getInt(@NotNull String path) {
         return this.getInt(path, 0);
     }
 
-    /**
-     * Provides an int located at the specified path. If the path does not contain a value or the value is not an
-     * integer the default value is returned.
-     *
-     * @param path Path to the value.
-     * @return Parsed int or the provided default value.
-     *
-     * @see ConfigSection#isInt(String)
-     * @see ConfigSection#getInt(String)
-     */
+    @Override
     public int getInt(@NotNull String path, int def) {
         try {
             return Integer.parseInt(this.getString(path, ""));
@@ -390,30 +223,12 @@ public class ConfigSection {
         }
     }
 
-    /**
-     * Provides a long located at the specified path. If the value at that path does not represent a long <code>0</code>
-     * is returned.
-     *
-     * @param path Path to the value.
-     * @return Parsed long.
-     *
-     * @see ConfigSection#isLong(String)
-     * @see ConfigSection#getLong(String, long)
-     */
+    @Override
     public long getLong(@NotNull String path) {
         return this.getLong(path, 0);
     }
 
-    /**
-     * Provides a long located at the specified path. If the path does not contain a value or the value is not a long
-     * the default value is returned.
-     *
-     * @param path Path to the value.
-     * @return Parsed long or the provided default value.
-     *
-     * @see ConfigSection#isLong(String)
-     * @see ConfigSection#getLong(String)
-     */
+    @Override
     public long getLong(@NotNull String path, long def) {
         try {
             return Long.parseLong(this.getString(path, ""));
@@ -422,30 +237,12 @@ public class ConfigSection {
         }
     }
 
-    /**
-     * Provides a float located at the specified path. If the value at that path does not represent a float
-     * <code>0</code> is returned.
-     *
-     * @param path Path to the value.
-     * @return Parsed float.
-     *
-     * @see ConfigSection#isFloat(String)
-     * @see ConfigSection#getFloat(String, float)
-     */
+    @Override
     public float getFloat(@NotNull String path) {
         return this.getFloat(path, (float) 0);
     }
 
-    /**
-     * Provides a float located at the specified path. If the path does not contain a value or the value is not a float
-     * the default value is returned.
-     *
-     * @param path Path to the value.
-     * @return Parsed float or the provided default value.
-     *
-     * @see ConfigSection#isFloat(String)
-     * @see ConfigSection#getFloat(String)
-     */
+    @Override
     public float getFloat(@NotNull String path, float def) {
         try {
             return Float.parseFloat(this.getString(path, ""));
@@ -454,30 +251,12 @@ public class ConfigSection {
         }
     }
 
-    /**
-     * Provides a double located at the specified path. If the value at that path does not represent a double
-     * <code>0</code> is returned.
-     *
-     * @param path Path to the value.
-     * @return Parsed double.
-     *
-     * @see ConfigSection#isDouble(String)
-     * @see ConfigSection#getDouble(String, double)
-     */
+    @Override
     public double getDouble(@NotNull String path) {
         return this.getDouble(path, 0);
     }
 
-    /**
-     * Provides a double located at the specified path. If the path does not contain a value or the value is not a
-     * double the default value is returned.
-     *
-     * @param path Path to the value.
-     * @return Parsed double or the provided default value.
-     *
-     * @see ConfigSection#isDouble(String)
-     * @see ConfigSection#getDouble(String)
-     */
+    @Override
     public double getDouble(@NotNull String path, double def) {
         try {
             return Double.parseDouble(this.getString(path, ""));
@@ -486,15 +265,7 @@ public class ConfigSection {
         }
     }
 
-    /**
-     * Provides a boolean located at the specified path. If the value at that path represented as a {@link String}
-     * equals "true" (case-insensitive) <code>true</code> is returned, otherwise <code>false</code>.
-     *
-     * @param path Path to the value.
-     * @return Parsed boolean.
-     *
-     * @see ConfigSection#isBoolean(String)
-     */
+    @Override
     public boolean getBoolean(@NotNull String path) {
         return Boolean.parseBoolean(this.getString(path));
     }
@@ -519,6 +290,7 @@ public class ConfigSection {
      * @param deep Whether to provide values from deeper levels or just the values of this section.
      * @return Map of all values this config contains.
      */
+    @Override
     public @NotNull Map<String, Object> getMap(boolean deep) {
         HashMap<String, Object> map = new HashMap<>();
 
