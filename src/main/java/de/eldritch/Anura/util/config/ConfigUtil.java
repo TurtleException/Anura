@@ -1,11 +1,9 @@
 package de.eldritch.Anura.util.config;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.Reader;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -107,8 +105,8 @@ public class ConfigUtil {
      * Loads values from a YAML provided by a reader.
      * @param reader Reader that can be used to read the YAML.
      */
-    public Map<String, Object> parseYaml(@NotNull Reader reader) {
-        @SuppressWarnings("unchecked")
+    public static Map<String, Object> parseYaml(@NotNull Reader reader) {
+        @SuppressWarnings({"unchecked", "RedundantCast"})
         Map<String, Object> map = (Map<String, Object>) ((Map<String, ?>) new Yaml().load(reader));
         ConfigUtil.clearMap(map);
         return map;

@@ -274,7 +274,7 @@ public class ConfigSection implements Config {
     /* ------------------------- */
 
     /**
-     * Sets all provided values to their given paths.
+     * Sets all provided values to their given paths. If a value cannot be set it will be ignored.
      * @param map Map of all values with their desired path as key.
      */
     public void setAll(@NotNull Map<String, ?> map) {

@@ -9,6 +9,7 @@ import java.util.TreeMap;
 /**
  * A simple config that is stored in a file.
  */
+@SuppressWarnings("unused")
 public class FileConfig extends ConfigSection {
     private final File file;
 
@@ -16,7 +17,7 @@ public class FileConfig extends ConfigSection {
         super(null, null);
 
         if (!file.exists())
-            throw new IllegalAccessError("File cannot be null");
+            throw new IllegalArgumentException("File cannot be null");
 
         this.file = file;
 
@@ -24,11 +25,11 @@ public class FileConfig extends ConfigSection {
     }
 
     /**
-     * (Re-)loads the config from its file.
+     * (Re-)loads the config from its file without deleting values that are not included in the file.
      * @throws FileNotFoundException if the {@link FileReader} could not be instantiated properly.
      */
     public void load() throws FileNotFoundException {
-        this.load(new FileReader(file), false);
+        this.setAll(ConfigUtil.parseYaml(new FileReader(file)));
     }
 
     /**
