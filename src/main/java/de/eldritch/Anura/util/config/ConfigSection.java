@@ -3,6 +3,8 @@ package de.eldritch.Anura.util.config;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.*;
 
 /**
@@ -111,6 +113,24 @@ public class ConfigSection implements Config {
             // pass on to deeper section or create new one
             getSection(keys[0]).set(path.substring(keys[0].length() + 1), value);
         }
+    }
+
+    /* ------------------------- */
+
+    @Override
+    public void loadDefaults(String resource) {
+        try {
+            InputStream stream = ClassLoader.getSystemResourceAsStream(resource);
+            if (stream == null)
+                return;
+
+            Map<String, Object> values = ConfigUtil.parseYaml(new InputStreamReader(stream));
+
+            values.forEach((s, o) -> {
+                if (this.get(s) != null)
+                    this.set(s, o);
+            });
+        } catch (Exception ignored) { }
     }
 
     /* ---------- ADDITIONAL GET ---------- */
@@ -355,7 +375,7 @@ public class ConfigSection implements Config {
     }
 
     /**
-     * Provides a child config located at the specified key (not recursive) or created a new config if necessary.
+     * Provides a child config located at the specified key (not recursive) or creates a new config if necessary.
      * @param key The key of the config.
      * @return (possibly new) config at that location.
      */
@@ -378,6 +398,25 @@ public class ConfigSection implements Config {
         }
 
         return section;
+    }
+
+    /**
+     * Provides a {@link ConfigSection} located at the specified path. If no section exists at this location a new one
+     * will be created and returned.
+     * @param path Path of the desired {@link ConfigSection}.
+     * @return (possibly new) config at that location.
+     * @see ConfigSection#getSection(String)
+     */
+    public @NotNull ConfigSection createSection(@NotNull String path) {
+        if (path.equals(""))
+            return this;
+
+        ConfigUtil.validatePath(path);
+
+        String[] keys = path.split("\\.");
+        String deeperPath = path.substring(keys[0].length() + 1);
+
+        return this.getSection(keys[0]).createSection(deeperPath);
     }
 
     /**

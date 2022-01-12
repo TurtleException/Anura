@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +36,15 @@ public interface Config {
      *                                  level will cause this exception to be thrown.
      */
     void set(@NotNull String path, @Nullable Object value) throws NullPointerException, IllegalArgumentException;
+
+    /* ------------------------- */
+
+    /**
+     * Loads the resource located at the specific path as a YAML and assigns all values to the config that do not occur
+     * in the original config. If the resource fails to load or a YAML cannot be parsed the method should fail silently.
+     * @param resource YAML resource path.
+     */
+    void loadDefaults(String resource);
 
 
     /* ---------- ADDITIONAL GET ---------- */

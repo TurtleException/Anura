@@ -11,11 +11,12 @@ public class AnuraLogger extends NestedLogger {
     private final AnuraInstance instance;
 
     /**
-     * Constructs a Logger named <code>ANURA#0</code> (0 being an example of the {@link AnuraInstance} ID).
+     * Constructs a Logger named <code>ANURA#0 - instName</code> (0 being an example of the {@link AnuraInstance} ID and
+     * <code>instName</code> being the name of the instance).
      * @param instance {@link AnuraInstance} that will be associated with the logger.
      */
     public AnuraLogger(@NotNull AnuraInstance instance) {
-        super("ANURA#" + instance.getId(), Anura.singleton.getLogger());
+        super(instance.getFullName(), Anura.singleton.getLogger());
         this.instance = instance;
     }
 

@@ -1,0 +1,6 @@
+discord:
+  guild: null
+  admins:
+    - null
+sql:
+  # TODO
