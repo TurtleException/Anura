@@ -1,6 +1,6 @@
 package de.eldritch.Anura.core.module;
 
-public class AnuraModuleEnableException extends Exception {
+public class AnuraModuleEnableException extends RuntimeException {
     public AnuraModuleEnableException(String message) {
         super(message);
     }

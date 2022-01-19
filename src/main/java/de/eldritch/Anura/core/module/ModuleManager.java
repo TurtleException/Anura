@@ -1,6 +1,7 @@
 package de.eldritch.Anura.core.module;
 
 import de.eldritch.Anura.core.AnuraInstance;
+import de.eldritch.Anura.util.config.ConfigSection;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.InvocationTargetException;
@@ -14,38 +15,31 @@ public class ModuleManager {
 
     private final HashSet<AnuraModule> modules = new HashSet<>();
 
-    @SafeVarargs
-    public ModuleManager(@NotNull AnuraInstance instance, Map.Entry<Class<? extends AnuraModule>, Object[]>... modules) {
+    public ModuleManager(@NotNull AnuraInstance instance) {
         this.instance = instance;
-
-        this.registerModules(new HashMap<>(Map.ofEntries(modules)));
     }
 
 
     /**
      * Registers modules by instantiating them one at a time.
      */
-    public void registerModules(HashMap<Class<? extends AnuraModule>, Object[]> modClasses) {
-        for (Map.Entry<Class<? extends AnuraModule>, Object[]> entry : modClasses.entrySet()) {
-            Class<? extends AnuraModule> clazz = entry.getKey();
-            Object[] params = entry.getValue();
-            Class<?>[] paramTypes = new Class<?>[params.length];
-            for (int i = 0; i < params.length; i++) {
-                paramTypes[i] = params[i].getClass();
-            }
+    public void registerModule(@NotNull Class<? extends AnuraModule> clazz, @NotNull ConfigSection config, Object... params) {
+        Class<?>[] paramTypes = new Class<?>[params.length];
+        for (int i = 0; i < params.length; i++) {
+            paramTypes[i] = params[i].getClass();
+        }
 
-            AnuraModule obj;
-            try {
-                // instantiate
-                obj = clazz.getConstructor(paramTypes).newInstance(params);
+        AnuraModule obj;
+        try {
+            // instantiate
+            obj = clazz.getConstructor(paramTypes).newInstance(params);
 
-                // add to set
-                if (!modules.add(obj)) // stop if another object of this module has already been registered
-                    throw new AnuraModuleEnableException(clazz.getSimpleName() + " already exists.");
-                instance.getLogger().info("Registered " + clazz.getSimpleName() + ".");
-            } catch (InvocationTargetException | InstantiationException | IllegalAccessException | NoSuchMethodException | AnuraModuleEnableException e) {
-                instance.getLogger().log(Level.WARNING, "Unable to instantiate " + clazz.getSimpleName() + ". It will be ignored.", e);
-            }
+            // add to set
+            if (!modules.add(obj)) // stop if another object of this module has already been registered
+                throw new AnuraModuleEnableException(clazz.getSimpleName() + " already exists.");
+            instance.getLogger().info("Registered " + clazz.getSimpleName() + ".");
+        } catch (InvocationTargetException | InstantiationException | IllegalAccessException | NoSuchMethodException | AnuraModuleEnableException e) {
+            instance.getLogger().log(Level.WARNING, "Unable to instantiate " + clazz.getSimpleName() + ". It will be ignored.", e);
         }
     }
 

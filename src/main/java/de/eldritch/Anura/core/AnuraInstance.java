@@ -3,6 +3,7 @@ package de.eldritch.Anura.core;
 import de.eldritch.Anura.Anura;
 import de.eldritch.Anura.core.module.AnuraModule;
 import de.eldritch.Anura.core.module.ModuleManager;
+import de.eldritch.Anura.core.module.timer.DummyModule;
 import de.eldritch.Anura.util.config.ConfigSection;
 import de.eldritch.Anura.util.config.FileConfig;
 import de.eldritch.Anura.util.config.IllegalConfigException;
@@ -96,7 +97,7 @@ public class AnuraInstance extends Thread {
         getLogger().log(Level.FINE, "Building JDA...");
         JDABuilder builder = JDABuilder.createDefault(config.getString("discord.token"));
 
-
+        // TODO: include gateway intents, presence and member cache policy
 
         jda = builder.build();
         getLogger().log(Level.FINE, "Successfully built JDA.");
@@ -132,12 +133,37 @@ public class AnuraInstance extends Thread {
      * and passes them to the {@link ModuleManager}.
      */
     private void registerModules() {
+        getLogger().log(Level.FINE, "Registering modules...");
+
         // collect all modules
-        HashSet<Class<? extends AnuraModule>> modules = new HashSet<>(
-                // TODO
-        );
+        HashSet<Class<? extends AnuraModule>> modules = new HashSet<>();
+        modules.add(DummyModule.class);
 
+        for (Class<? extends AnuraModule> module : modules) {
+            String name = AnuraModule.getName(module);
+            getLogger().log(Level.FINE, "Checking module '" + name + "'...");
 
+            ConfigSection moduleSection;
+            try {
+                moduleSection = config.get("module." + name, ConfigSection.class);
+            } catch (NullPointerException | IllegalArgumentException e) {
+                getLogger().log(Level.WARNING, "Encountered an unexpected exception while checking module '" + name + "'", e);
+                continue;
+            } catch (ClassCastException e) {
+                getLogger().log(Level.FINE, "Could not find valid config section for module '" + name + "', ignoring it.", e);
+                continue;
+            }
+
+            if (moduleSection == null) {
+                getLogger().log(Level.FINE, "Could not find a valid config section for module '" + name + "', ignoring it.");
+                continue;
+            }
+
+            moduleManager.registerModule(module, moduleSection);
+            getLogger().log(Level.FINE, "Registered module '" + name + "'");
+        }
+
+        getLogger().log(Level.INFO, moduleManager.getRegisteredModules().size() + " modules registered.");
     }
 
     /* ------------------------- */
