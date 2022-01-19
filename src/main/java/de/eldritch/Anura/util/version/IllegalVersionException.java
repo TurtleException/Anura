@@ -1,6 +1,6 @@
 package de.eldritch.Anura.util.version;
 
-public class IllegalVersionException extends Exception {
+public class IllegalVersionException extends RuntimeException {
     public IllegalVersionException(String raw, Throwable cause) {
         super("'" + raw + "' could not be converted to Version", cause);
     }
