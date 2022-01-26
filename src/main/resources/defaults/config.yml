@@ -1,6 +1,12 @@
 discord:
+  token: ""
   guild: null
   admins:
     - null
 sql:
-  # TODO
+  address: ""
+  database: "anura"
+  password: ""
+  user: ""
+  port: 3306
+# TODO

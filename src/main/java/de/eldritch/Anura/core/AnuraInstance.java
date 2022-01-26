@@ -87,8 +87,6 @@ public class AnuraInstance extends Thread {
         getLogger().log(Level.FINE, "Thread has been interrupted.");
     }
 
-    /* ---------- THREAD ---------- */
-
     /**
      * This method is called to build the {@link JDA} instance.
      * @see AnuraInstance#run()
@@ -176,7 +174,7 @@ public class AnuraInstance extends Thread {
         return "ANURA#" + this.getId() + " - " + this.getName();
     }
 
-    JDA getJDA() {
+    public JDA getJDA() {
         return jda;
     }
 }

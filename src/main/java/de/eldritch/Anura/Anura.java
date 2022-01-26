@@ -1,20 +1,23 @@
 package de.eldritch.Anura;
 
+import de.eldritch.Anura.control.ControlInstance;
 import de.eldritch.Anura.core.AnuraInstance;
+import de.eldritch.Anura.data.DataService;
 import de.eldritch.Anura.util.config.ConfigSection;
 import de.eldritch.Anura.util.config.FileConfig;
+import de.eldritch.Anura.util.config.IllegalConfigException;
 import de.eldritch.Anura.util.logging.LogUtil;
 import de.eldritch.Anura.util.logging.SimpleFormatter;
 import de.eldritch.Anura.util.version.IllegalVersionException;
 import de.eldritch.Anura.util.version.Version;
 import org.jetbrains.annotations.NotNull;
-import org.yaml.snakeyaml.reader.StreamReader;
 
+import javax.security.auth.login.LoginException;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.nio.file.NotDirectoryException;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,22 +31,31 @@ public class Anura {
     public static Anura singleton;
     public static final Version VERSION = Version.retrieveFromResources();
 
+    public enum Status { INIT, CONTROL, INSTANCES, READY, SHUTDOWN }
+    private Status status;
+
     private final File directory;
     private final Logger logger;
 
     private FileConfig config;
     private FileConfig instanceConf;
 
+    private ControlInstance controlInstance;
     private final HashSet<AnuraInstance> instances = new HashSet<>();
 
-    public Anura() throws URISyntaxException, NullPointerException, IOException, IllegalVersionException {
+    private DataService dataService;
+
+
+    public Anura() throws URISyntaxException, NullPointerException, IOException, IllegalVersionException, SQLException, LoginException {
         singleton = this;
+
+        status = Status.INIT;
 
         /* ----- VERSION ----- */
         if (VERSION == null)
             throw new IllegalVersionException("Version may not be null.");
 
-        System.out.printf(" version %s...%n", VERSION.toString());
+        System.out.printf(" version %s...%n", VERSION);
 
         /* ----- FILES ----- */
         directory = new File(Anura.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile();
@@ -77,15 +89,25 @@ public class Anura {
                 }
             }
             if (!configFile.isFile())
-                throw new IOException(configFile.getName() + " seems to not be a file.");
+                throw new IOException(configFile.getName() + " seems not to be a file.");
         }
         config       = new FileConfig(configFiles[0]);
         instanceConf = new FileConfig(configFiles[1]);
         config.loadDefaults("defaults/config.yml");
 
 
+        this.constructControlInstance();
+
+        status = Status.CONTROL;
+
+        this.constructServices();
+
+        status = Status.INSTANCES;
+
         this.constructInstances();
         this.enableInstances();
+
+        status = Status.READY;
     }
 
     /* ---------- MAIN ---------- */
@@ -100,7 +122,19 @@ public class Anura {
         }
     }
 
+    /* ---------- SERVICES ---------- */
+
+    private void constructServices() throws SQLException, IllegalConfigException {
+        dataService = new DataService(this);
+    }
+
     /* ---------- INSTANCES ---------- */
+
+    private void constructControlInstance() throws IllegalConfigException, LoginException {
+        controlInstance = new ControlInstance(this);
+        controlInstance.setDaemon(true);
+        controlInstance.start();
+    }
 
     private void constructInstances() {
         for (String key : instanceConf.getKeys(false)) {
@@ -110,6 +144,7 @@ public class Anura {
                 ConfigSection config = instanceConf.createSection(key);
 
                 AnuraInstance instance = new AnuraInstance(config);
+                instance.setDaemon(true);
                 instances.add(instance);
 
                 getLogger().log(Level.INFO, "Constructed instance:  " + instance.getFullName());
@@ -144,5 +179,21 @@ public class Anura {
      */
     public @NotNull Logger getLogger() {
         return logger;
+    }
+
+    public @NotNull FileConfig getConfig() {
+        return config;
+    }
+
+    public int getTotalInstances() {
+        return instances.size();
+    }
+
+    public @NotNull Status getStatus() {
+        return status;
+    }
+
+    public DataService getDataService() {
+        return dataService;
     }
 }

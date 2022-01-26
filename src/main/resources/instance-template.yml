@@ -3,6 +3,4 @@ default:
   discord:
     token: null
   module:
-    blacklist:
-      - null
-    config:
+    timer:
