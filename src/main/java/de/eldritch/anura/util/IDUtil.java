@@ -1,4 +1,4 @@
-package de.eldritch.anura.util.id;
+package de.eldritch.anura.util;
 
 import java.util.concurrent.atomic.AtomicLong;
 
