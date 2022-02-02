@@ -1,9 +1,13 @@
 # TODO
+- [ ] Implement better ID system
+- [ ] Update Time util
+  - [ ] Implement wednesday support
+  - [ ] Don't forget **TimeZones** (!)
 - [ ] Database
   - Objects
     - [ ] Retrieve memes
     - [ ] Add randomizer function (with seed?)
-  - [ ] Guild data
+  - Guild data
     - [ ] Store preferences per guild
     - [ ] Store stats per guild
 - [ ] ControlInstance

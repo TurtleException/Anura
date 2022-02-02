@@ -4,11 +4,11 @@ import de.eldritch.Anura.Anura;
 import de.eldritch.Anura.data.entities.GuildData;
 import de.eldritch.Anura.data.entities.Meme;
 import de.eldritch.Anura.util.config.IllegalConfigException;
-import de.eldritch.Anura.util.id.ID;
 import de.eldritch.Anura.util.logging.NestedLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.SQLException;
+import java.util.UUID;
 
 public class DataService {
     private final SQLConnector sqlConnector;
@@ -22,7 +22,7 @@ public class DataService {
 
     /* ---------- REQUESTS ---------- */
 
-    public synchronized Meme getMeme(ID id) {
+    public synchronized Meme getMeme(UUID id) {
         return null;
     }
 

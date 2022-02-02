@@ -20,9 +20,20 @@ public class SQLConnector {
 
     // table templates
     private static final String[] TEMPLATES = {
-            "`memes` ( `id` BIGINT NOT NULL , `source` TEXT NOT NULL , `language` TEXT NULL , `user` BIGINT NOT NULL , PRIMARY KEY (`id`))",
-            "`guilds` ( `instance_bot_id` BIGINT NOT NULL , `guild` BIGINT NOT NULL , PRIMARY KEY (`instance_bot_id`))"
-            // TODO
+            /*
+             * All the memes... ALL OF THEM MUHAHAHAHAHA
+             */
+            "`memes` ( `id` VARCHAR(36) NOT NULL , `source` TEXT NOT NULL , `language` TEXT NULL , `user` BIGINT NOT NULL , PRIMARY KEY (`id`))",
+
+            /*
+             * Member guilds with their associated bot user ID and the chosen language and time zone.
+             */
+            "`guilds` ( `id` BIGINT NOT NULL , `bot_id` BIGINT NOT NULL , `language` TEXT NOT NULL , `modules_id` INT NOT NULL , PRIMARY KEY (`id`, `bot_id`))",
+
+            /*
+             * All module configurations (enabled / disabled) for each instance & guild.
+             */
+            "`modules` ( `id` SMALLINT NOT NULL AUTO_INCREMENT , `data` BIGINT NOT NULL , PRIMARY KEY (`id`))"
     };
 
     public SQLConnector(Logger logger, ConfigSection config) throws SQLException, IllegalConfigException {

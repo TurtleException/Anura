@@ -4,6 +4,8 @@ import de.eldritch.Anura.util.time.Offset;
 import de.eldritch.Anura.util.time.Time;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.UUID;
+
 public class ID {
     private final Time timestamp;
     private final long increment;
@@ -11,6 +13,8 @@ public class ID {
     ID(@NotNull Time timestamp, long increment) {
         this.timestamp = timestamp;
         this.increment = increment;
+
+        UUID
     }
 
     public @NotNull Time getTimestamp() {
