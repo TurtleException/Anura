@@ -57,7 +57,7 @@ public abstract class AnuraModule {
      * Provides the module's simple name.
      * @see AnuraModule#getName(Class)
      */
-    public String getName() {
+    public final String getName() {
         return moduleName;
     }
 
@@ -71,11 +71,11 @@ public abstract class AnuraModule {
         return module.getSimpleName().substring(0, module.getSimpleName().length() - "Module".length()).toLowerCase();
     }
 
-    public @NotNull NestedLogger getLogger() {
+    public final @NotNull NestedLogger getLogger() {
         return logger;
     }
 
-    private @NotNull AnuraInstance getInstance() {
+    protected final @NotNull AnuraInstance getInstance() {
         return instance;
     }
 }
