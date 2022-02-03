@@ -3,6 +3,7 @@ package de.eldritch.anura.core;
 import de.eldritch.anura.Instance;
 import de.eldritch.anura.InstanceKey;
 import de.eldritch.anura.InstanceManager;
+import de.eldritch.anura.core.guild.GuildManager;
 import de.eldritch.anura.util.text.Language;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;

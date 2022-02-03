@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.security.auth.login.LoginException;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class AnuraInstanceBuilder {
     private final JDABuilder jdaBuilder;
 

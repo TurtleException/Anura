@@ -7,7 +7,6 @@ import net.dv8tion.jda.api.entities.Guild;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Level;
 
 /**
@@ -23,7 +22,7 @@ public class SubmissionModule extends AnuraModule {
         List<Guild> guilds = getInstance().getJDA().getGuilds();
         getLogger().log(Level.INFO, "Registering commands for " + guilds.size() + " guilds...");
         for (Guild guild : guilds) {
-            // TODO
+
         }
     }
 }
