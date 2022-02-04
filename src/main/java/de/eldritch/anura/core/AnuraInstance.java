@@ -4,6 +4,7 @@ import de.eldritch.anura.Instance;
 import de.eldritch.anura.InstanceKey;
 import de.eldritch.anura.InstanceManager;
 import de.eldritch.anura.core.guild.GuildManager;
+import de.eldritch.anura.core.module.ModuleManager;
 import de.eldritch.anura.util.text.Language;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -15,6 +16,7 @@ public class AnuraInstance extends Instance {
     private final InstanceKey instanceKey;
 
     private final GuildManager guildManager;
+    private final ModuleManager moduleManager;
 
     private final JDA jda;
 
@@ -25,6 +27,8 @@ public class AnuraInstance extends Instance {
         this.guildManager = new GuildManager(this);
 
         this.jda = builder.build();
+
+        this.moduleManager = new ModuleManager(this);
     }
 
     /* ------------------------- */
