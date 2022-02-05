@@ -75,7 +75,16 @@ public abstract class AnuraModule {
         return logger;
     }
 
-    protected final @NotNull AnuraInstance getInstance() {
+    public final @NotNull AnuraInstance getInstance() {
         return instance;
+    }
+
+    /**
+     * Provides the offset of this module in the chain of bits that each represent a module being activated or not per
+     * server. If the offset is negative the module will always be active.
+     * @return Offset of bit representation.
+     */
+    public int offset() {
+        return -1;
     }
 }

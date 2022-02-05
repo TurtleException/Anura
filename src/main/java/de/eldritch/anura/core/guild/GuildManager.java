@@ -16,7 +16,7 @@ public class GuildManager {
     }
 
 
-    private GuildContainer getContainer(long snowflake) {
+    public GuildContainer getContainer(long snowflake) {
         GuildContainer guild = guilds.get(snowflake);
         if (guild == null) {
             guild = new GuildContainer(this, snowflake);
@@ -41,5 +41,13 @@ public class GuildManager {
      */
     public void markRecent(long snowflake, long id) {
         getContainer(snowflake).addID(id);
+    }
+
+    public GuildContainer.Status getStatus(long snowflake) {
+        return getContainer(snowflake).getStatus();
+    }
+
+    public void setStatus(long snowflake, GuildContainer.Status status) {
+        getContainer(snowflake).setStatus(status);
     }
 }

@@ -3,7 +3,7 @@ package de.eldritch.anura.core.guild;
 import de.eldritch.anura.util.LongCache;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.SimpleTimeZone;
+import java.time.ZoneId;
 
 public class GuildContainer {
     private static final int LONG_CACHE_CAPACITY = 10;
@@ -11,16 +11,27 @@ public class GuildContainer {
     private final GuildManager manager;
     private final long snowflake;
 
-    private Status status;
+    private Status status = Status.UNKNOWN;
 
     private LongCache recentIDs;
-    private SimpleTimeZone timeZone;
+    private ZoneId timeZone;
 
-    public GuildContainer(@NotNull GuildManager manager, long snowflake) {
+    GuildContainer(@NotNull GuildManager manager, long snowflake) {
         this.manager = manager;
         this.snowflake = snowflake;
 
         this.recentIDs = new LongCache(LONG_CACHE_CAPACITY);
+
+        this.retrievePermanentData();
+        this.checkStatus();
+    }
+
+    private void retrievePermanentData() {
+        // TODO
+    }
+
+    private void checkStatus() {
+        // TODO
     }
 
     /**
@@ -68,22 +79,31 @@ public class GuildContainer {
     /* ------------------------- */
 
     /**
-     * Provides the cache of recently used IDs for this guild.
+     * Provides the cache of recently used IDs for this guild. If no IDs have been cached for that guild yet an empty
+     * array will be returned.
+     * <p>This is used to prevent the same memes from being posted not long enough apart.
      * @return ID cache.
+     * @see GuildContainer#addID(long)
      */
     public @NotNull LongCache getIDCache() {
         return recentIDs;
     }
 
-    public SimpleTimeZone getTimeZone() {
-        return timeZone;
-    }
-
     /**
      * Caches an ID for this guild, marking it as recently used.
+     * <p>This is used to prevent the same memes from being posted not long enough apart.
      * @param id ID to cache.
+     * @see GuildContainer#getIDCache()
      */
     public void addID(long id) {
         recentIDs.put(id);
+    }
+
+    public ZoneId getTimeZone() {
+        return timeZone;
+    }
+
+    public void setTimeZone(ZoneId timeZone) {
+        this.timeZone = timeZone;
     }
 }
