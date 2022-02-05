@@ -15,7 +15,7 @@ import java.util.logging.Level;
 public class CommandListener extends ListenerAdapter {
     private final AnuraInstance instance;
 
-    CommandListener(AnuraInstance instance) {
+    public CommandListener(AnuraInstance instance) {
         this.instance = instance;
     }
 

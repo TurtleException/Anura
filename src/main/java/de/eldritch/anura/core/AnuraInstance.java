@@ -5,18 +5,16 @@ import de.eldritch.anura.InstanceKey;
 import de.eldritch.anura.InstanceManager;
 import de.eldritch.anura.core.guild.GuildContainer;
 import de.eldritch.anura.core.guild.GuildManager;
+import de.eldritch.anura.core.listener.CommandListener;
 import de.eldritch.anura.core.module.ModuleManager;
 import de.eldritch.anura.util.text.Language;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.entities.ISnowflake;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
-import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import org.jetbrains.annotations.NotNull;
 
 import javax.security.auth.login.LoginException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -119,7 +117,7 @@ public class AnuraInstance extends Instance {
     }
 
     private void checkGlobalListeners() {
-
+        getJDA().addEventListener(new CommandListener(this));
     }
 
     /* ---------- RUNTIME CHECKS ---------- */
