@@ -16,7 +16,7 @@ import java.util.logging.Formatter;
 public class LogUtil {
     /**
      * After the main class requests the {@link FileHandler} via {@link LogUtil#getFileHandler(Formatter)} the log file
-     * that is associated with that handler will be stored in this variable so it can be used later.
+     * that is associated with that handler will be stored in this variable, so it can be used later.
      */
     private static File logFile;
 

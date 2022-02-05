@@ -28,7 +28,7 @@ public class AnuraInstance extends Instance {
     private final JDABuilder builder;
     private JDA jda;
 
-    AnuraInstance(@NotNull InstanceManager instanceManager, @NotNull InstanceKey instanceKey, @NotNull JDABuilder builder) throws LoginException, IllegalArgumentException {
+    AnuraInstance(@NotNull InstanceManager instanceManager, @NotNull InstanceKey instanceKey, @NotNull JDABuilder builder) throws IllegalArgumentException {
         super(instanceManager);
         this.instanceKey = instanceKey;
 
@@ -98,11 +98,10 @@ public class AnuraInstance extends Instance {
             getLogger().log(Level.INFO, "Command 'timezone' is missing. Creating...");
             getJDA().upsertCommand("timezone", "Set your servers timezone.")
                     .addOption(OptionType.STRING, "TZDB-code", "TZDB-Format (\"Europe/Berlin\", \"America/New_York\")", true, true)
-                    .queue(command -> {
-                        getLogger().log(Level.INFO, "Command 'timezone' created with id " + command.getId());
-                    }, throwable -> {
-                        getLogger().log(Level.WARNING, "Command 'timezone' could not be created", throwable);
-                    });
+                    .queue(
+                            command   -> getLogger().log(Level.INFO, "Command 'timezone' created with id " + command.getId()),
+                            throwable -> getLogger().log(Level.WARNING, "Command 'timezone' could not be created", throwable)
+                    );
         }
 
         if (!commandNames.contains("timezones")) {
@@ -130,17 +129,20 @@ public class AnuraInstance extends Instance {
 
     @Override
     public @NotNull String getFullName() {
-        if (instanceKey instanceof Language language)
+        if (instanceKey instanceof Language language) {
             return "ANURA - " + language.code();
-        else
+        } else {
             return instanceKey.toString();
+        }
     }
 
     public Language getLanguage() {
         return language;
     }
 
-    public JDA getJDA() {
+    public JDA getJDA() throws IllegalStateException {
+        if (jda == null)
+            throw new IllegalStateException("Instance is not running.");
         return jda;
     }
 

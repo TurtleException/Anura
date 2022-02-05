@@ -1,8 +1,8 @@
 package de.eldritch.anura.util.text;
 
+import de.eldritch.anura.InstanceKey;
 import de.eldritch.anura.InstanceManager;
 import de.eldritch.anura.core.AnuraInstance;
-import de.eldritch.anura.InstanceKey;
 import org.jetbrains.annotations.NotNull;
 
 public enum Language implements InstanceKey {

@@ -7,7 +7,6 @@ import org.jetbrains.annotations.Nullable;
 import java.time.DateTimeException;
 import java.time.ZoneId;
 import java.util.Set;
-import java.util.TimeZone;
 import java.util.TreeSet;
 
 public class TimeZoneParser {

@@ -13,7 +13,7 @@ public class GuildContainer {
 
     private Status status = Status.UNKNOWN;
 
-    private LongCache recentIDs;
+    private final LongCache recentIDs;
     private ZoneId timeZone;
 
     GuildContainer(@NotNull GuildManager manager, long snowflake) {

@@ -92,4 +92,12 @@ public class Anura {
     public @NotNull Logger getLogger() {
         return logger;
     }
+
+    public DataService getDataService() {
+        return dataService;
+    }
+
+    public InstanceManager getInstanceManager() {
+        return instanceManager;
+    }
 }

@@ -37,9 +37,9 @@ public class CommandListener extends ListenerAdapter {
                         .setTitle(title)
                         .build())
                 .addFile(getZoneIdFile(), "available-tzdb-timezones.txt")
-                .queue(null, throwable -> {
-                    instance.getLogger().log(Level.WARNING, "Encountered an exception when attempting to send timezone list.", throwable);
-                });
+                .queue(null,
+                        throwable -> instance.getLogger().log(Level.WARNING, "Encountered an exception when attempting to send timezone list.", throwable)
+                );
     }
 
     /* ------------------------- */
