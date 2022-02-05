@@ -1,21 +1,37 @@
 package de.eldritch.anura.core.guild;
 
+import de.eldritch.anura.core.AnuraInstance;
+import de.eldritch.anura.data.DataService;
 import de.eldritch.anura.util.LongCache;
+import net.dv8tion.jda.api.entities.Guild;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.ZoneId;
 
+/**
+ * Stores information on a single {@link Guild} for an {@link AnuraInstance}.
+ * The guild is only stored as its snowflake ID to prevent issues with caching.
+ */
 public class GuildContainer {
+    // specifies the size of the ID cache
     private static final int LONG_CACHE_CAPACITY = 10;
 
+    // responsible manager
     private final GuildManager manager;
+    // snowflake ID of the guild
     private final long snowflake;
 
     private Status status = Status.UNKNOWN;
 
     private final LongCache recentIDs;
+    // TZDB timezone ID of the guild
     private ZoneId timeZone;
 
+    /**
+     * Package-private constructor - called by {@link GuildManager#getContainer(long)}.
+     * @param manager Responsible {@link GuildManager}.
+     * @param snowflake Snowflake ID of the guild.
+     */
     GuildContainer(@NotNull GuildManager manager, long snowflake) {
         this.manager = manager;
         this.snowflake = snowflake;
@@ -26,20 +42,20 @@ public class GuildContainer {
         this.checkStatus();
     }
 
+    /**
+     * Query the {@link DataService} for data on the guild that has already been stored (e.g. from before a restart).
+     * @see GuildContainer#GuildContainer(GuildManager, long)
+     */
     private void retrievePermanentData() {
         // TODO
     }
 
+    /**
+     * Checks all currently available data for this guild and determines the {@link Status}.
+     * @see GuildContainer#GuildContainer(GuildManager, long)
+     */
     private void checkStatus() {
         // TODO
-    }
-
-    /**
-     * Provides the snowflake ID of the guild.
-     * @return Guild ID.
-     */
-    public long getSnowflake() {
-        return snowflake;
     }
 
     /* ------------------------- */
@@ -76,7 +92,16 @@ public class GuildContainer {
         this.status = status;
     }
 
+
     /* ------------------------- */
+
+    /**
+     * Provides the snowflake ID of the guild.
+     * @return Guild ID.
+     */
+    public long getSnowflake() {
+        return snowflake;
+    }
 
     /**
      * Provides the cache of recently used IDs for this guild. If no IDs have been cached for that guild yet an empty
@@ -99,11 +124,16 @@ public class GuildContainer {
         recentIDs.put(id);
     }
 
+    /**
+     * Provides the {@link ZoneId} associated with the UTC-offset of this guild.
+     * <p>This may be <code>null</code> if the {@link Status} is not <code>READY</code>.
+     * @return ZoneId of this guild.
+     */
     public ZoneId getTimeZone() {
         return timeZone;
     }
 
-    public void setTimeZone(ZoneId timeZone) {
+    public void setTimeZone(@NotNull ZoneId timeZone) {
         this.timeZone = timeZone;
     }
 }

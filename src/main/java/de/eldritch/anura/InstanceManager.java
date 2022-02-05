@@ -9,12 +9,21 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.logging.Level;
 
+/**
+ * Responsible for controlling all {@link Instance} objects (mainly {@link AnuraInstance}). This manager is part of the
+ * main thread.
+ * @see Instance
+ * @see AnuraInstance
+ */
 public class InstanceManager {
     private final HashMap<InstanceKey, Instance> instances = new HashMap<>();
 
     private enum SpecialKey implements InstanceKey { CONTROL }
 
-    public InstanceManager() {
+    /**
+     * Package-private constructor - Only called by the {@link Anura} constructor.
+     */
+    InstanceManager() {
         instances.put(SpecialKey.CONTROL, new ControlInstance(this));
     }
 
@@ -31,6 +40,11 @@ public class InstanceManager {
         }
     }
 
+    /**
+     * Enabled a single {@link AnuraInstance} based on a provided {@link Language}. If the instance fails to initialize
+     * the exception is logged as a <code>SEVERE</code> record on the root logger.
+     * @param language Language as key.
+     */
     private void enableInstance(@NotNull Language language) {
         try {
             instances.put(language,

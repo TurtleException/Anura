@@ -5,6 +5,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 
+/**
+ * Controls all {@link GuildContainer} objects for a single {@link AnuraInstance}.
+ */
 public class GuildManager {
     private final AnuraInstance instance;
 

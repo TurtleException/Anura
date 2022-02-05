@@ -18,13 +18,18 @@ import javax.security.auth.login.LoginException;
 import java.util.List;
 import java.util.logging.Level;
 
+/**
+ * A single instance associated with a {@link InstanceKey}.
+ */
 public class AnuraInstance extends Instance {
     private final InstanceKey instanceKey;
     private final Language language;
 
+    // responsible manager
     private GuildManager guildManager;
     private ModuleManager moduleManager;
 
+    // this builder can be reused for each thread interruption
     private final JDABuilder builder;
     private JDA jda;
 
@@ -121,7 +126,7 @@ public class AnuraInstance extends Instance {
 
     /* ---------- RUNTIME CHECKS ---------- */
 
-    public boolean checkGuildAvailable(long snowflake) {
+    public synchronized boolean checkGuildAvailable(long snowflake) {
         return getGuildManager().getContainer(snowflake).getStatus() == GuildContainer.Status.READY;
     }
 
