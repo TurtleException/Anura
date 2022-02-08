@@ -7,6 +7,7 @@ import de.eldritch.anura.core.guild.GuildContainer;
 import de.eldritch.anura.core.guild.GuildManager;
 import de.eldritch.anura.core.listener.AutoCompleteListener;
 import de.eldritch.anura.core.listener.CommandListener;
+import de.eldritch.anura.core.module.AnuraModule;
 import de.eldritch.anura.core.module.ModuleManager;
 import de.eldritch.anura.util.text.Language;
 import net.dv8tion.jda.api.JDA;
@@ -69,6 +70,16 @@ public class AnuraInstance extends Instance {
 
         this.guildManager  = new GuildManager(this);
         this.moduleManager = new ModuleManager(this);
+
+        // register modules
+        getLogger().log(Level.INFO, "Registering modules...");
+        ModuleManager.getClasses().forEach(moduleClass -> moduleManager.registerModule(moduleClass));
+        getLogger().log(Level.INFO, moduleManager.getRegisteredModules().size() + " modules registered.");
+
+        // enable modules
+        getLogger().log(Level.INFO, "Enabling modules...");
+        this.moduleManager.getRegisteredModules().forEach(anuraModule -> anuraModule.setEnabled(true));
+        getLogger().log(Level.INFO, moduleManager.countEnabled() + " modules enabled.");
 
 
         /* --------------- --------------- --------------- */
@@ -155,5 +166,9 @@ public class AnuraInstance extends Instance {
 
     public GuildManager getGuildManager() {
         return guildManager;
+    }
+
+    public ModuleManager getModuleManager() {
+        return moduleManager;
     }
 }

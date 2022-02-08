@@ -1,13 +1,25 @@
 package de.eldritch.anura.core.module;
 
 import de.eldritch.anura.core.AnuraInstance;
+import de.eldritch.anura.core.module.event.EventModule;
+import de.eldritch.anura.core.module.invite.InviteModule;
+import de.eldritch.anura.core.module.request.RequestModule;
+import de.eldritch.anura.core.module.submission.SubmissionModule;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 
 public class ModuleManager {
+    private static final Set<Class<? extends AnuraModule>> MODULE_CLASSES = Set.of(
+            EventModule.class,
+            InviteModule.class,
+            RequestModule.class,
+            SubmissionModule.class
+    );
+
     private final AnuraInstance instance;
 
     private final HashSet<AnuraModule> modules = new HashSet<>();
@@ -20,16 +32,11 @@ public class ModuleManager {
     /**
      * Registers modules by instantiating them one at a time.
      */
-    public void registerModule(@NotNull Class<? extends AnuraModule> clazz, Object... params) {
-        Class<?>[] paramTypes = new Class<?>[params.length];
-        for (int i = 0; i < params.length; i++) {
-            paramTypes[i] = params[i].getClass();
-        }
-
+    public void registerModule(@NotNull Class<? extends AnuraModule> clazz) {
         AnuraModule obj;
         try {
             // instantiate
-            obj = clazz.getConstructor(paramTypes).newInstance(params);
+            obj = clazz.getConstructor((Class<?>[]) null).newInstance();
 
             // add to set
             if (!modules.add(obj)) // stop if another object of this module has already been registered
@@ -45,6 +52,10 @@ public class ModuleManager {
      */
     public HashSet<AnuraModule> getRegisteredModules() {
         return this.modules;
+    }
+
+    public static Set<Class<? extends AnuraModule>> getClasses() {
+        return Set.copyOf(MODULE_CLASSES);
     }
 
     public boolean unregister(AnuraModule module) {
