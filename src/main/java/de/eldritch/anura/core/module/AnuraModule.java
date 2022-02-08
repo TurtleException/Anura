@@ -31,11 +31,12 @@ public abstract class AnuraModule {
 
     /* ---------- UI ---------- */
 
-    public String getDescription() {
-        return TextUtil.get("module." + moduleName + ".description", getInstance().getLanguage()).toString();
-    }
+    public static String getDescription(AnuraModule module) throws IllegalArgumentException {
+        if (!(module instanceof OptionalModule))
+            throw new IllegalArgumentException("Non-optional modules do not have a description");
 
-    public abstract Emoji getEmoji();
+        return TextUtil.get("module." + module.getName() + ".description", module.getInstance().getLanguage()).toString();
+    }
 
     /* ------------------------- */
 
