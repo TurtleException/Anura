@@ -53,7 +53,7 @@ public class TextUtil {
         throw new NullPointerException("No language data found.");
     }
 
-    private static void checkSingleton() {
+    private synchronized static void checkSingleton() {
         if (singleton == null) {
             singleton = new TextUtil();
         }
