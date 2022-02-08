@@ -3,6 +3,7 @@ package de.eldritch.anura.core.module.submission;
 import de.eldritch.anura.core.AnuraInstance;
 import de.eldritch.anura.core.module.AnuraModule;
 import de.eldritch.anura.core.module.AnuraModuleEnableException;
+import net.dv8tion.jda.api.entities.Emoji;
 import net.dv8tion.jda.api.entities.Guild;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,4 +26,13 @@ public class SubmissionModule extends AnuraModule {
 
         }
     }
+
+    /* ---------- UI ---------- */
+
+    @Override
+    public Emoji getEmoji() {
+        return Emoji.fromUnicode("U+1F91D");
+    }
+
+    /* ------------------------- */
 }

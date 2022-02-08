@@ -2,6 +2,8 @@ package de.eldritch.anura.core.module;
 
 import de.eldritch.anura.core.AnuraInstance;
 import de.eldritch.anura.util.logging.NestedLogger;
+import de.eldritch.anura.util.text.TextUtil;
+import net.dv8tion.jda.api.entities.Emoji;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.logging.Level;
@@ -26,6 +28,14 @@ public abstract class AnuraModule {
     public void onEnable() throws AnuraModuleEnableException { }
 
     public void onDisable() { }
+
+    /* ---------- UI ---------- */
+
+    public String getDescription() {
+        return TextUtil.get("module." + moduleName + ".description", getInstance().getLanguage()).toString();
+    }
+
+    public abstract Emoji getEmoji();
 
     /* ------------------------- */
 
