@@ -7,7 +7,6 @@ import de.eldritch.anura.util.text.TextUtil;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,11 +17,9 @@ import java.util.logging.Level;
  * Generic listener for global {@link Command Commands} or commands that are common on all guilds and not specific to
  * one {@link AnuraModule}.
  */
-public class CommandListener extends ListenerAdapter {
-    private final AnuraInstance instance;
-
-    public CommandListener(AnuraInstance instance) {
-        this.instance = instance;
+public class CommandListener extends AbstractInstanceListener {
+    public CommandListener(@NotNull AnuraInstance instance) {
+        super(instance);
     }
 
     @Override
@@ -33,9 +30,11 @@ public class CommandListener extends ListenerAdapter {
 
         // determine command
         switch (event.getName().toLowerCase()) {
-            case "timezones" -> this.commandTimezones(event);
+            case "timezones" -> { this.commandTimezones(event); return; }
             // TODO
         }
+
+        // don't do anything, maybe this is intended for another listener
     }
 
     /* ---------- COMMANDS ---------- */

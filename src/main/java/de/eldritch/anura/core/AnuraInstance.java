@@ -5,6 +5,7 @@ import de.eldritch.anura.InstanceKey;
 import de.eldritch.anura.InstanceManager;
 import de.eldritch.anura.core.guild.GuildContainer;
 import de.eldritch.anura.core.guild.GuildManager;
+import de.eldritch.anura.core.listener.AutoCompleteListener;
 import de.eldritch.anura.core.listener.CommandListener;
 import de.eldritch.anura.core.module.ModuleManager;
 import de.eldritch.anura.util.text.Language;
@@ -122,6 +123,7 @@ public class AnuraInstance extends Instance {
 
     private void checkGlobalListeners() {
         getJDA().addEventListener(new CommandListener(this));
+        getJDA().addEventListener(new AutoCompleteListener(this));
     }
 
     /* ---------- RUNTIME CHECKS ---------- */

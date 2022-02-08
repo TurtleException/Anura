@@ -12,7 +12,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * The database connection to MySQL. This class is only instantiated once by {@link Anura} and provides a connection for
@@ -22,6 +21,9 @@ import java.util.Set;
 public class DataService {
     private final NestedLogger logger;
     private final SQLConnector sqlConnector;
+
+    // implement with default values
+    private List<String> recentTimeZoneCache = List.of("UTC", "Europe/Berlin");
 
     public DataService() throws IOException, SQLException, NullPointerException {
         this.logger = new NestedLogger("DataService", Anura.singleton.getLogger());
@@ -93,11 +95,17 @@ public class DataService {
                 frequent.add(resultSet.getString(1));
             } while (resultSet.next());
 
+            recentTimeZoneCache = frequent;
+
             return frequent;
         } catch (Exception e) {
-            // return defaults
-            return List.of("UTC", "Europe/Berlin");
+            // return cache
+            return recentTimeZoneCache;
         }
+    }
+
+    public @NotNull List<String> getRecentTimeZoneCache() {
+        return List.copyOf(recentTimeZoneCache);
     }
 
     /* ------------------------- */
